@@ -183,6 +183,18 @@ awk 'NR==FNR{
 >> ./others/metadata.tsv
 ```
 
+
+
+Validate the metadata
+
+```bash
+qiime metadata tabulate \
+  --m-input-file ./others/metadata.tsv \
+  --o-visualization ./qzv/metadata.qzv
+```
+
+Go to https://view.qiime2.org/  and upload the `qvz` file to view it.
+
 Download the data:
 
 ```bash
@@ -212,5 +224,44 @@ echo
 sleep 1s
 done
 ```
+
+
+
+## Import Data
+
+First check the format (Phred score version) of the data. Run the data with `fastqc` tool. 
+
+> Ensure that conda has `fastqc` installed, prefereabley in different environment. 
+> 
+> You can install `fastqc` by running `conda install bioconda::fastqc` in the target environment.
+
+Run 
+
+```bash
+fastqc ./data/FMT.0093C_46_L001_R2_001.fastq.gz
+```
+
+Import the data.
+
+```bash
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path ./others/manifest.tsv \
+  --input-format PairedEndFastqManifestPhred33V2 \
+  --output-path ./qza/paired-end-demux.qza
+```
+
+## Summary of the demultiplexed results
+
+```bash
+qiime demux summarize \
+  --i-data qza/paired-end-demux.qza \
+  --p-n 10000 \
+  --o-visualization qzv/demux.qzv
+```
+
+Let's view the sequence summary from `demuz.qzv` file.
+
+:point_right: :point_right: :point_right: :point_right:
 
 
