@@ -21,7 +21,6 @@ sudo apt update && sudo apt upgrade -y
 # install curl
 sudo apt install curl -y
 
-
 # install micromamba
 "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
 ```
@@ -29,6 +28,12 @@ sudo apt install curl -y
 For details instruction on installing micromamba go to my github repository:[ bioinfo-pc-setup](https://github.com/arriyaz/bioinfo-pc-set-up.git).
 
 ## Install QIIM2
+
+> If the channel priority in conda is set to **strict**, you have to make it **flexible** or **turn it off** to install QIIME2. 
+> 
+> Look for `.condarc` file in the home folder. Open it in a text editor and change the **channel_priority** to **flexible**. 
+> 
+> You can change it back to **strict** after installing QIIME2.
 
 Download the installation file.
 
@@ -78,12 +83,29 @@ Let's check qiime2 and its plugin versions
 qiime info
 ```
 
-?‘‰?‘‰?‘‰?‘‰?‘‰?‘‰
+:point_right: :point_right: :point_right: :point_right: 
+
+## Download the data for this workshop
+
+We will work inside a directory under home folder.
+
+> Everybody is advised to create same directory name for easy and consistent instruction and follow up.
+
+Let's create the working directory for our workshop.
+
+```bash
+mkdir -p ~/metagenomics-workshop
+```
+
+Now go to the following link to download the data in zip format and save it inside the **metagenomics-workshop** directory.
+
+Link: [16s-data.zip - Google Drive](https://drive.google.com/file/d/168gvq2gpN5QXUY4nJcjllhbFQVZH0-Lx/view?usp=drive_link)
 
 ## Check an artifact
 
 ```bash
-mkdir -p temp
+mkdir -p ~/metagenomics-workshop/temp
+
 
 # Download an artifact
 curl -sL \
@@ -100,7 +122,7 @@ If you want to export an artifact to the relevant format.
 # export
 qiime tools export \
     --input-path ./temp/sequences.qza \
-????--output-path ./temp/exported-sequences/
+    --output-path ./temp/exported-sequences
 ```
 
 ## Check available plugins
@@ -115,7 +137,7 @@ Check actions under diversity plugin:
 qiime diversity --help
 ```
 
-?:point_right: :point_right: :point_right: :point_right: :point_right: 
+:point_right: :point_right: :point_right: :point_right: 
 
 ## Importing the data
 
@@ -125,7 +147,7 @@ qiime diversity --help
 qiime tools list-types  --tsv
 ```
 
-?“¢ Let's save the importable types list in a tsv file
+:loudspeaker: Let's save the importable types list in a tsv file.
 
 ### Check importable formats
 
@@ -133,9 +155,9 @@ qiime tools list-types  --tsv
 qiime tools list-formats --importable --tsv
 ```
 
-:loudspeaker: Let's save the importable format list in a tsv file
+:loudspeaker: Let's save the importable format list in a tsv file.
 
-:loudspeaker: Let's save the exportable format list in a tsv file
+:loudspeaker: Let's save the exportable format list in a tsv file.
 
 # Redo: Reconstitution of the gut microbiota of antibiotic-treated patients by autologous fecal microbiota transplant
 
@@ -183,8 +205,6 @@ awk 'NR==FNR{
 >> ./others/metadata.tsv
 ```
 
-
-
 Validate the metadata
 
 ```bash
@@ -195,7 +215,7 @@ qiime metadata tabulate \
 
 Go to https://view.qiime2.org/  and upload the `qvz` file to view it.
 
-Download the data:
+If you want to download `fastq` file from SRA database:
 
 ```bash
 for file in $(cat ./others/SRAids.txt)
@@ -225,17 +245,15 @@ sleep 1s
 done
 ```
 
-
-
 ## Import Data
 
 First check the format (Phred score version) of the data. Run the data with `fastqc` tool. 
 
-> Ensure that conda has `fastqc` installed, prefereabley in different environment. 
+> Ensure that conda has `fastqc` installed, prefereabley in a different environment. 
 > 
 > You can install `fastqc` by running `conda install bioconda::fastqc` in the target environment.
 
-Run 
+Run fastqc for some files.
 
 ```bash
 fastqc ./data/FMT.0093C_46_L001_R2_001.fastq.gz
@@ -255,13 +273,110 @@ qiime tools import \
 
 ```bash
 qiime demux summarize \
-  --i-data qza/paired-end-demux.qza \
+  --i-data ./qza/paired-end-demux.qza \
   --p-n 10000 \
-  --o-visualization qzv/demux.qzv
+  --o-visualization ./qzv/demux-summary.qzv
 ```
 
 Let's view the sequence summary from `demuz.qzv` file.
 
 :point_right: :point_right: :point_right: :point_right:
 
+## Sequence QC and Feature Table Construction
 
+Let's at first check is truncation length is suitable for merging the reads:
+
+First crate an empty `.sh` file inside `others` folder.
+
+```bash
+touch ./others/merging-check.sh
+```
+
+Now open the `merging-check.sh` file in text editor, copy the following code and save it. 
+
+Change the values as per your preference and check if merging possible.
+
+```bash
+F_primer_start=563
+R_primer_start=926
+
+min_overlap=12
+F_read_trunc_len=204
+R_read_trunc_len=200
+
+F_read_end=$(( $F_primer_start + $F_read_trunc_len - 1 ))
+R_read_end=$(( $R_primer_start - $R_read_trunc_len + 1 ))
+
+overlap=$(expr $F_read_end - $R_read_end + 1)
+
+if [ $overlap -ge $min_overlap ]
+then
+    echo
+    echo "Atleast $overlap bp overlapping"
+    echo "Merging possible!!"
+    echo
+else
+    echo
+    echo "Only $overlap bp overlapping"
+    echo "No marging possible!!"
+    echo
+fi
+```
+
+Now to run the bash script:
+
+```bash
+bash ./others/merging-check.sh
+```
+
+Run DADA2. It will perform:
+
+- quality filtering
+
+- Denoising
+
+- chimera checking
+
+- paired-end read joining and ASV generation
+
+```bash
+qiime dada2 denoise-paired \
+    --i-demultiplexed-seqs ./qza/paired-end-demux.qza \
+    --p-trunc-len-f 203 \
+    --p-trunc-len-r 200 \
+    --p-trim-left-f 0 \
+    --p-trim-left-r 0 \
+    --p-min-overlap 12 \
+    --p-n-threads 30 \
+    --verbose \
+    --o-representative-sequences ./qza/asv-rep-seqs.qza \
+    --o-table ./qza/feature-table.qza \
+    --o-denoising-stats ./qza/denoise-stats.qza
+```
+
+Let's generate visualizations from DADA2 outputs to check the summaries.
+
+Summarize dada2 denoising stats. This file will show us how many reads were filtered in each step.
+
+```bash
+qiime metadata tabulate \
+    --m-input-file ./qza/denoise-stats.qza \
+    --o-visualization ./qzv/dada2-stats-summary.qzv
+```
+
+Next, to view feature-table summary. The feature table describes which amplicon sequence variants (ASVs) were observed in which samples, and how many times each ASV was observed in each sample.
+
+```bash
+qiime feature-table summarize \
+    --i-table ./qza/feature-table.qza \
+    --m-sample-metadata-file ./others/metadata.tsv \
+    --o-visualization ./qzv/feature-table-summary.qzv
+```
+
+We can also view the representative ASV sequence (feature data) for each feature.
+
+```bash
+qiime feature-table tabulate-seqs \
+    --i-data ./qza/asv-rep-seqs.qza \
+    --o-visualization ./qzv/asv-rep-seqs-summary.qzv
+```
