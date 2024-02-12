@@ -1,4 +1,4 @@
-## # Workshop On Microbiome Analysis
+## # Preparatory Steps
 
 ## Install Miniconda
 
@@ -27,7 +27,7 @@ sudo apt install curl -y
 
 For details instruction on installing micromamba go to my github repository:[ bioinfo-pc-setup](https://github.com/arriyaz/bioinfo-pc-set-up.git).
 
-## Install QIIM2
+## Install QIIME2
 
 > If the channel priority in conda is set to **strict**, you have to make it **flexible** or **turn it off** to install QIIME2. 
 > 
@@ -83,8 +83,6 @@ Let's check qiime2 and its plugin versions
 qiime info
 ```
 
-:point_right: :point_right: :point_right: :point_right: 
-
 ## Download the data for this workshop
 
 We will work inside a directory under home folder.
@@ -100,6 +98,8 @@ mkdir -p ~/metagenomics-workshop
 Now go to the following link to download the data in zip format and save it inside the **metagenomics-workshop** directory.
 
 Link: [16s-data.zip - Google Drive](https://drive.google.com/file/d/168gvq2gpN5QXUY4nJcjllhbFQVZH0-Lx/view?usp=drive_link)
+
+:point_right: :point_right: :point_right: :point_right:  
 
 ## Check an artifact
 
@@ -124,6 +124,8 @@ qiime tools export \
     --input-path ./temp/sequences.qza \
     --output-path ./temp/exported-sequences
 ```
+
+:point_right: :point_right: :point_right: :point_right:
 
 ## Check available plugins
 
@@ -159,13 +161,15 @@ qiime tools list-formats --importable --tsv
 
 :loudspeaker: Let's save the exportable format list in a tsv file.
 
+
+
 # Redo: Reconstitution of the gut microbiota of antibiotic-treated patients by autologous fecal microbiota transplant
 
   doi: 10.1126/scitranslmed.aap9489 
 
 ```bash
 # Create necessary folders
-mkdir -p qzv qza others results data
+mkdir -p qzv qza others results
 ```
 
 This metadata file is the compilation of ~12.5k data from several studies.
@@ -201,7 +205,7 @@ awk 'NR==FNR{
     a[$1];
     next
     } $1 in a
-' others/sampleids.txt others/compilation-metadata.tsv \
+' ./others/sampleids.txt ./others/compilation-metadata.tsv \
 >> ./others/metadata.tsv
 ```
 
@@ -215,7 +219,7 @@ qiime metadata tabulate \
 
 Go to https://view.qiime2.org/  and upload the `qvz` file to view it.
 
-If you want to download `fastq` file from SRA database:
+[optional for this workshop] If you want to download `fastq` file from SRA database:
 
 ```bash
 for file in $(cat ./others/SRAids.txt)
@@ -226,7 +230,7 @@ done
 
 :point_right: :point_right: :point_right: :point_right: 
 
-## Prepare Manifest File
+## Prepare the Manifest File
 
 ```bash
 # get absolute file path for forward and reverse reads.
@@ -244,6 +248,8 @@ echo
 sleep 1s
 done
 ```
+
+:point_right: :point_right: :point_right: :point_right:  
 
 ## Import Data
 
@@ -282,7 +288,7 @@ Let's view the sequence summary from `demuz.qzv` file.
 
 :point_right: :point_right: :point_right: :point_right:
 
-## Sequence QC and Feature Table Construction
+## Denoising and Clustering for Sequence QC and Feature Table Construction
 
 Let's at first check is truncation length is suitable for merging the reads:
 
