@@ -141,28 +141,6 @@ qiime diversity --help
 
 :point_right: :point_right: :point_right: :point_right: 
 
-## Importing the data
-
-### Check importable types
-
-```bash
-qiime tools list-types  --tsv
-```
-
-:loudspeaker: Let's save the importable types list in a tsv file.
-
-### Check importable formats
-
-```bash
-qiime tools list-formats --importable --tsv
-```
-
-:loudspeaker: Let's save the importable format list in a tsv file.
-
-:loudspeaker: Let's save the exportable format list in a tsv file.
-
-
-
 # Redo: Reconstitution of the gut microbiota of antibiotic-treated patients by autologous fecal microbiota transplant
 
   doi: 10.1126/scitranslmed.aap9489 
@@ -253,6 +231,28 @@ done
 
 ## Import Data
 
+### Check importable types
+
+```bash
+qiime tools list-types  --tsv
+```
+
+:loudspeaker: Let's save the importable types list in a tsv file.
+
+### Check importable formats
+
+```bash
+qiime tools list-formats --importable --tsv
+```
+
+:loudspeaker: Let's save the importable format list in a tsv file.
+
+:loudspeaker: Let's save the exportable format list in a tsv file.
+
+:point_right: :point_right: :point_right: :point_right: 
+
+### Understand your data format
+
 First check the format (Phred score version) of the data. Run the data with `fastqc` tool. 
 
 > Ensure that conda has `fastqc` installed, prefereabley in a different environment. 
@@ -262,10 +262,14 @@ First check the format (Phred score version) of the data. Run the data with `fas
 Run fastqc for some files.
 
 ```bash
-fastqc ./data/FMT.0093C_46_L001_R2_001.fastq.gz
+fastqc ./data/FMT.0093D_2_L001_R1_001.fastq.gz -o ./temp/
 ```
 
-Import the data.
+```bash
+fastqc ./data/FMT.0106I_64_L001_R2_001.fastq.gz -o ./temp/
+```
+
+Let's import the data.
 
 ```bash
 qiime tools import \
