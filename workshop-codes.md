@@ -114,6 +114,9 @@ curl -sL \
 
 # Unzip
 unzip  -o ./temp/sequences.qza -d ./temp/
+
+# Unzip or extract with QIIME2 plugin
+qiime tools extract --input-path ./temp/sequences.qza --output-path ./temp/
 ```
 
 If you want to export an artifact to the relevant format.
@@ -390,3 +393,91 @@ qiime feature-table tabulate-seqs \
     --i-data ./qza/asv-rep-seqs.qza \
     --o-visualization ./qzv/asv-rep-seqs-summary.qzv
 ```
+
+## Prepare Taxonomy Classifier
+
+We will use the latest release of Greengenes database: **Greengenes2 2022.10**
+
+This release is quite a bit different than previous release of Greengenes.
+
+To learn more about this release go to this discussion from its developer: **[Introducing Greengenes2 2022.10](https://forum.qiime2.org/t/introducing-greengenes2-2022-10/25291)**
+
+The ftp link of this release: **https://ftp.microbio.me/greengenes_release/2022.10/**
+
+> Normally Qiime2 has a dedicated plugin `q2-feature-classifier` for training taxonomy classifier for specific data. To learn more, go to this link: [Training feature classifiers with q2-feature-classifier](https://docs.qiime2.org/2023.9/tutorials/feature-classifier/). But, **Greengenes2** have its own plugin and a bit different approach for preparing classifier. Hopefully, QIIME2 will update there documentation in future for **Greengenes2**.
+
+For this workshop, we will follow new approach.
+
+If the **qiime2-amplicon** environment is not activated, at activate the environment.
+
+And, don't forget to  enable QIIM2 tab-completion option by running `source tab-qiime`.
+
+Now, let's install greengene2 plugin for QIIME2
+
+```bash
+pip install q2-greengenes2
+```
+
+Create a directory for classifier data
+
+```bash
+mkdir -p ~/metagenomics-workshop/classifier
+```
+
+### Download reference data
+
+Download reference sequence for full-length 16s rRNA.
+
+```bash
+wget https://ftp.microbio.me/greengenes_release/2022.10/2022.10.backbone.full-length.fna.qza --no-check-certificate -P ./classifier
+```
+
+Download reference taxonomy data for full-length 16s rRNA.
+
+```bash
+wget https://ftp.microbio.me/greengenes_release/2022.10/2022.10.taxonomy.asv.nwk.qza --no-check-certificate -P ./classifier
+```
+
+### Map our data to reference
+
+Now we will map our data with reference to create taxonomic classifier for our data.
+
+```bash
+qiime greengenes2 non-v4-16s \
+    --i-table ./qza/feature-table.qza \
+    --i-sequences ./qza/asv-rep-seqs.qza \
+    --i-backbone ./classifier/2022.10.backbone.full-length.fna.qza \
+    --p-threads 30 \
+    --o-mapped-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
+    --o-representatives ./classifier/gg2-2022.10-v4-v5.fna.qza
+```
+
+## Perform taxonomic classification
+
+```bash
+qiime greengenes2 taxonomy-from-table \
+	--i-reference-taxonomy ./classifier/2022.10.taxonomy.asv.nwk.qza \
+	--i-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
+	--o-classification ./qza/taxonomy.qza
+```
+
+### Create taxonomy visualization
+
+```bash
+qiime metadata tabulate \
+  --m-input-file ./qza/taxonomy.qza \
+  --o-visualization ./qzv/taxonomy.qzv
+```
+
+### Create barplot for taxonomic composition
+
+```bash
+qiime taxa barplot \
+  --i-table ./qza/feature-table.qza \
+  --i-taxonomy ./qza/taxonomy.qza \
+  --m-metadata-file ./others/metadata.tsv \
+  --o-visualization ./qzv/taxa_barplot.qzv
+```
+
+
+
