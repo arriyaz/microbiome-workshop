@@ -406,6 +406,12 @@ The ftp link of this release: **https://ftp.microbio.me/greengenes_release/2022.
 
 > Normally Qiime2 has a dedicated plugin `q2-feature-classifier` for training taxonomy classifier for specific data. To learn more, go to this link: [Training feature classifiers with q2-feature-classifier](https://docs.qiime2.org/2023.9/tutorials/feature-classifier/). But, **Greengenes2** have its own plugin and a bit different approach for preparing classifier. Hopefully, QIIME2 will update there documentation in future for **Greengenes2**.
 
+> In this study, following primers were used to amplify the region between V4 and V5 of 16s rRNA gene:
+>
+> 563F: AYTGGGYDTAAAGNG
+>
+> 926R: CCGTCAATTYHTTTRAGT
+
 For this workshop, we will follow new approach.
 
 If the **qiime2-amplicon** environment is not activated, at activate the environment.
@@ -452,6 +458,36 @@ qiime greengenes2 non-v4-16s \
     --o-representatives ./classifier/gg2-2022.10-v4-v5.fna.qza
 ```
 
+Create feature table summary from greengenes biom table:
+
+> The terms **biom** and **features** denote kind off similar meaning.
+
+```bash
+qiime feature-table summarize \
+    --i-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
+    --m-sample-metadata-file ./others/metadata.tsv \
+    --o-visualization ./qzv/gg2-biom-table-summary.qzv
+```
+
+**[optional:]** If you want to convert the biom (binary format) table to tsv file for other purposes you can convert it by following commands:
+
+First export the table artifact into biom format:
+
+```bash
+qiime tools export \
+	--input-path ./classifier/gg2-2022.10-v4-v5.biom.qza \
+	--output-path ./temp/
+```
+
+Convert the biom file to tsv file:
+
+```bash
+biom convert \
+    -i ./temp/feature-table.biom \
+    -o temp/feature-table.tsv \
+    --to-tsv
+```
+
 ## Perform taxonomic classification
 
 ```bash
@@ -473,7 +509,7 @@ qiime metadata tabulate \
 
 ```bash
 qiime taxa barplot \
-  --i-table ./qza/feature-table.qza \
+  --i-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
   --i-taxonomy ./qza/taxonomy.qza \
   --m-metadata-file ./others/metadata.tsv \
   --o-visualization ./qzv/taxa_barplot.qzv
