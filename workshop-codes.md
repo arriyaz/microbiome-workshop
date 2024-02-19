@@ -413,7 +413,7 @@ biom convert \
     --to-tsv
 ```
 
-## 
+:point_right: :point_right: :point_right: :point_right: 
 
 ## Prepare Taxonomy Classifier
 
@@ -435,6 +435,8 @@ The ftp link of this release: **https://ftp.microbio.me/greengenes_release/2022.
 
 For this workshop, we will follow new approach.
 
+### Install greengenes2 plugin
+
 If the **qiime2-amplicon** environment is not activated, at activate the environment.
 
 And, don't forget to  enable QIIM2 tab-completion option by running `source tab-qiime`.
@@ -445,13 +447,15 @@ Now, let's install greengene2 plugin for QIIME2
 pip install q2-greengenes2
 ```
 
+Now restart your terminal and reactivate the qiime2 environment. 
+
+### Download reference data
+
 Create a directory for classifier data
 
 ```bash
 mkdir -p ~/metagenomics-workshop/classifier
 ```
-
-### Download reference data
 
 Download reference sequence for full-length 16s rRNA.
 
