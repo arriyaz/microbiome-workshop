@@ -314,7 +314,7 @@ F_primer_start=563
 R_primer_start=926
 
 min_overlap=12
-F_read_trunc_len=204
+F_read_trunc_len=203
 R_read_trunc_len=200
 
 F_read_end=$(( $F_primer_start + $F_read_trunc_len - 1 ))
@@ -394,6 +394,27 @@ qiime feature-table tabulate-seqs \
     --o-visualization ./qzv/asv-rep-seqs-summary.qzv
 ```
 
+Let's extract the feature-table as a tsv file.
+
+First export the table artifact into biom format:
+
+```bash
+qiime tools export \
+	--input-path ./qza/feature-table.qza \
+	--output-path ./temp/
+```
+
+Convert the biom file to tsv file:
+
+```bash
+biom convert \
+    -i ./temp/feature-table.biom \
+    -o temp/feature-table.tsv \
+    --to-tsv
+```
+
+## 
+
 ## Prepare Taxonomy Classifier
 
 We will use the latest release of Greengenes database: **Greengenes2 2022.10**
@@ -404,7 +425,7 @@ To learn more about this release go to this discussion from its developer: **[In
 
 The ftp link of this release: **https://ftp.microbio.me/greengenes_release/2022.10/**
 
-> Normally Qiime2 has a dedicated plugin `q2-feature-classifier` for training taxonomy classifier for specific data. To learn more, go to this link: [Training feature classifiers with q2-feature-classifier](https://docs.qiime2.org/2023.9/tutorials/feature-classifier/). But, **Greengenes2** have its own plugin and a bit different approach for preparing classifier. Hopefully, QIIME2 will update there documentation in future for **Greengenes2**.
+> Normally Qiime2 has a dedicated plugin `q2-feature-classifier` for training taxonomy classifier for specific data. To learn more, go to this link: [Training feature classifiers with q2-feature-classifier](https://docs.qiime2.org/2023.9/tutorials/feature-classifier/). But, **Greengenes2** have its own plugin and a bit different approach for preparing classifier. Hopefully, QIIME2 will update its documentation in future for **Greengenes2**.
 
 > In this study, following primers were used to amplify the region between V4 and V5 of 16s rRNA gene:
 >
@@ -444,6 +465,8 @@ Download reference taxonomy data for full-length 16s rRNA.
 wget https://ftp.microbio.me/greengenes_release/2022.10/2022.10.taxonomy.asv.nwk.qza --no-check-certificate -P ./classifier
 ```
 
+:point_right: :point_right: :point_right: :point_right: 
+
 ### Map our data to reference
 
 Now we will map our data with reference to create taxonomic classifier for our data.
@@ -454,9 +477,11 @@ qiime greengenes2 non-v4-16s \
     --i-sequences ./qza/asv-rep-seqs.qza \
     --i-backbone ./classifier/2022.10.backbone.full-length.fna.qza \
     --p-threads 30 \
-    --o-mapped-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
-    --o-representatives ./classifier/gg2-2022.10-v4-v5.fna.qza
+    --o-mapped-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+    --o-representatives ./classifier/gg2-2022.10-v4-v5.rep-seqs.fna.qza
 ```
+
+:point_right: :point_right: :point_right: :point_right: 
 
 Create feature table summary from greengenes biom table:
 
@@ -464,10 +489,20 @@ Create feature table summary from greengenes biom table:
 
 ```bash
 qiime feature-table summarize \
-    --i-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
+    --i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
     --m-sample-metadata-file ./others/metadata.tsv \
     --o-visualization ./qzv/gg2-biom-table-summary.qzv
 ```
+
+Similarly, create summary for representative sequence of each feature:
+
+```bash
+qiime feature-table tabulate-seqs \
+    --i-data ./classifier/gg2-2022.10-v4-v5.rep-seqs.fna.qza \
+    --o-visualization ./qzv/gg2-rep-seqs-summary.qzv
+```
+
+
 
 **[optional:]** If you want to convert the biom (binary format) table to tsv file for other purposes you can convert it by following commands:
 
