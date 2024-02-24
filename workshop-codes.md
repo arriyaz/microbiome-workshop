@@ -532,7 +532,7 @@ biom convert \
 ```bash
 qiime greengenes2 taxonomy-from-table \
 	--i-reference-taxonomy ./classifier/2022.10.taxonomy.asv.nwk.qza \
-	--i-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
+	--i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
 	--o-classification ./qza/taxonomy.qza
 ```
 
@@ -548,7 +548,7 @@ qiime metadata tabulate \
 
 ```bash
 qiime taxa barplot \
-  --i-table ./classifier/gg2-2022.10-v4-v5.biom.qza \
+  --i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
   --i-taxonomy ./qza/taxonomy.qza \
   --m-metadata-file ./others/metadata.tsv \
   --o-visualization ./qzv/taxa_barplot.qzv
