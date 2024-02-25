@@ -540,18 +540,18 @@ qiime greengenes2 taxonomy-from-table \
 
 ```bash
 qiime metadata tabulate \
-  --m-input-file ./qza/taxonomy.qza \
-  --o-visualization ./qzv/taxonomy.qzv
+	--m-input-file ./qza/taxonomy.qza \
+	--o-visualization ./qzv/taxonomy.qzv
 ```
 
 ### Create barplot for taxonomic composition
 
 ```bash
 qiime taxa barplot \
-  --i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
-  --i-taxonomy ./qza/taxonomy.qza \
-  --m-metadata-file ./others/metadata.tsv \
-  --o-visualization ./qzv/taxa_barplot.qzv
+	--i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+	--i-taxonomy ./qza/taxonomy.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/taxa_barplot.qzv
 ```
 
 ## Generate a tree for phylogenetic diversity analyses
@@ -598,11 +598,11 @@ Now, let's generate alpha rarefaction curve for your data:
 
 ```bash
 qiime diversity alpha-rarefaction \
-  --i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
-  --i-phylogeny ./qza/rooted-tree.qza \
-  --p-max-depth 24392 \
-  --m-metadata-file ./others/metadata.tsv \
-  --o-visualization ./qzv/alpha-rarefaction.qzv
+	--i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+	--i-phylogeny ./qza/rooted-tree.qza \
+	--p-max-depth 24392 \
+	--m-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/alpha-rarefaction.qzv
 ```
 
 ## Alpha and Beta Diversity Analysis
