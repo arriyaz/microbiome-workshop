@@ -554,5 +554,208 @@ qiime taxa barplot \
   --o-visualization ./qzv/taxa_barplot.qzv
 ```
 
+## Generate a tree for phylogenetic diversity analyses
 
+Several alpha and beta diversity metrics in QIIME2 require a rooted phylogenetic tree relating the features to one another. In this case there are two approach in QIIME2: 1. reference-based fragment insertion approach, 2. A *de novo* approach.
 
+To know more about phylogeny in QIIME2 visit this link: [Phylogenetic inference with q2-phylogeny](https://docs.qiime2.org/2023.9/tutorials/phylogeny/)
+
+We will use the *de novo* approach where we have to do the following steps:
+
+1. Generate a multiple sequence alignment within QIIME2
+2. Mask the alignment if need (to get rid of noise)
+3. Construct phylogenetic tree
+4. Root the phylogenetic tree
+
+For multiple sequence alignment QIIME2 uses **MAFFT**.
+
+There are three methods available in QIIME2 to construct  phylogenetic tree:
+
+1. FastTree
+2. RAxML
+3. IQ-Tree
+
+We will use `align-to-tree-mafft-fasttree` pipeline to do all the steps in on run:
+
+```bash
+qiime phylogeny align-to-tree-mafft-fasttree \
+	--i-sequences ./classifier/gg2-2022.10-v4-v5.rep-seqs.fna.qza \
+	--o-alignment ./qza/aligned-rep-seqs.qza \
+	--o-masked-alignment ./qza/masked-aligned-rep-seqs.qza \
+	--o-tree ./qza/unrooted-tree.qza \
+	--o-rooted-tree ./qza/rooted-tree.qza
+```
+
+:point_right: :point_right: :point_right: :point_right: 
+
+## Alpha Rarefaction Plot
+
+Let's view an example: [Alpha rarefaction plot from moving picture tutorial](https://view.qiime2.org/visualization/?type=html&src=https%3A%2F%2Fdocs.qiime2.org%2F2023.9%2Fdata%2Ftutorials%2Fmoving-pictures%2Falpha-rarefaction.qzv)
+
+Now, let's generate alpha rarefaction curve for your data:
+
+> To select the `--p-max-depth` value, check the `feature-table-summary.qzv` file and start from minimum frequency per sample. Inspect the trend in the plot. Try to increase the value in several steps and compare the plot.
+
+```bash
+qiime diversity alpha-rarefaction \
+  --i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+  --i-phylogeny ./qza/rooted-tree.qza \
+  --p-max-depth 24392 \
+  --m-metadata-file ./others/metadata.tsv \
+  --o-visualization ./qzv/alpha-rarefaction.qzv
+```
+
+## Alpha and Beta Diversity Analysis
+
+The `core-metrics-phylogenetic` pipeline under `q2-diversity` plugin calculates alpha and beta diversity based on 8 different metrics (4 for alpha diversity and 4 for beta diversity). It also performs principle coordinate analysis (PCoA) for each beta diversity metrics).
+
+```bash
+qiime diversity core-metrics-phylogenetic \
+	--i-phylogeny ./qza/rooted-tree.qza \
+	--i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+	--p-sampling-depth 24392 \
+	--m-metadata-file ./others/metadata.tsv \
+	--p-n-jobs-or-threads 'auto' \
+	--output-dir core-metrics-results
+```
+
+### Explore Alpha Diversity
+
+Let's explore **alpha diversity** in the context of our sample metadata.
+
+Observed Features (a qualitative measure of community richness):
+
+```bash
+qiime diversity alpha-group-significance \
+	--i-alpha-diversity ./core-metrics-results/observed_features_vector.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/observed-features-group-significance.qzv
+```
+
+Shannon’s diversity index (a quantitative measure of community richness):
+
+```bash
+qiime diversity alpha-group-significance \
+	--i-alpha-diversity ./core-metrics-results/shannon_vector.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/shannon-vector-group-significance.qzv
+```
+
+Faith’s Phylogenetic Diversity (a qualitative measure of community richness that incorporates phylogenetic relationships between the features):
+
+```bash
+qiime diversity alpha-group-significance \
+	--i-alpha-diversity ./core-metrics-results/faith_pd_vector.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/faith-pd-group-significance.qzv
+```
+
+Evenness (or Pielou’s Evenness; a measure of community evenness):
+
+```bash
+qiime diversity alpha-group-significance \
+	--i-alpha-diversity ./core-metrics-results/evenness_vector.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/evenness-vector-group-significance.qzv
+```
+
+The `alpha-group-significance` command performs **comparison** between different **categorical** groups in the metadata. That's why it excludes the numerical column from calculation. 
+
+If you want to check **correlation** between alpha diversity and different **numerical** columns in the metadata then you can use the `alpha-correlation` command under `q2-diversity` plugin. 
+
+For example, if you want to check alpha correlation for ***observed-features*** metric:
+
+```bash
+qiime diversity alpha-correlation \
+	--i-alpha-diversity ./core-metrics-results/observed_features_vector.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/observed-features-correlation.qzv
+```
+
+:loudspeaker: Check alpha correlation for other metrics.
+
+### Explore Beta Diversity
+
+Similarly we can explore **beta diversity** in the context of our sample metadata
+
+Let's check beta diversity significance for the `categorical-time-relative-to-hct` column.
+
+Jaccard distance (a qualitative measure of community dissimilarity):
+
+```bash
+qiime diversity beta-group-significance \
+	--i-distance-matrix ./core-metrics-results/jaccard_distance_matrix.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--m-metadata-column categorical-time-relative-to-hct \
+	--o-visualization ./qzv/jaccard_categorical-time-relative-to-hct_significance.qzv \
+	--p-pairwise
+```
+
+Bray-Curtis distance (a quantitative measure of community dissimilarity):
+
+```bash
+qiime diversity beta-group-significance \
+	--i-distance-matrix ./core-metrics-results/bray_curtis_distance_matrix.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--m-metadata-column categorical-time-relative-to-hct \
+	--o-visualization ./qzv/bray-curtis_categorical-time-relative-to-hct_significance.qzv \
+	--p-pairwise
+```
+
+Unweighted UniFrac distance (a qualitative measure of community dissimilarity that incorporates phylogenetic relationships between the features)
+
+```bash
+qiime diversity beta-group-significance \
+	--i-distance-matrix ./core-metrics-results/unweighted_unifrac_distance_matrix.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--m-metadata-column categorical-time-relative-to-hct \
+	--o-visualization ./qzv/unweighted-unifrac_categorical-time-relative-to-hct_significance.qzv \
+	--p-pairwise
+```
+
+Weighted UniFrac distance (a quantitative measure of community dissimilarity that incorporates phylogenetic relationships between the features)
+
+```bash
+qiime diversity beta-group-significance \
+	--i-distance-matrix ./core-metrics-results/weighted_unifrac_distance_matrix.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--m-metadata-column categorical-time-relative-to-hct \
+	--o-visualization ./qzv/weighted-unifrac_categorical-time-relative-to-hct_significance.qzv \
+	--p-pairwise
+```
+
+:loudspeaker: Check beta group significance for other categorical columns.
+
+#### PCoA Plot:
+
+The `core-metrics-phylogenetic` command generates visualizations for principle coordinate plots for different beta diversity metrics. 
+
+Move all visualizations from **core-metrics-results** folder to **qzv** folder.
+
+```bash
+mv ./core-metrics-results/*.qzv ./qzv/
+```
+
+#### Time Series Analysis for Beta Diversity
+
+We can also perform time series analysis for beta diversity metrics in the context of numerical columns in metadata.
+
+Let's view some examples:
+
+```bash
+qiime emperor plot \
+  --i-pcoa ./core-metrics-results/bray_curtis_pcoa_results.qza \
+  --m-metadata-file ./others/metadata.tsv \
+  --p-custom-axes week-relative-to-hct \
+  --o-visualization ./qzv/bray-curtis_week-relative-to-hct_PCoA.qzv
+```
+
+```bash
+qiime emperor plot \
+  --i-pcoa ./core-metrics-results/weighted_unifrac_pcoa_results.qza \
+  --m-metadata-file ./others/metadata.tsv \
+  --p-custom-axes week-relative-to-fmt \
+  --o-visualization ./qzv/weighted-unifrac_week-relative-to-fmt_PCoA.qzv
+```
+
+:loudspeaker: Check this command for other numerical columns and beta diversity metrics.
