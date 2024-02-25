@@ -744,18 +744,18 @@ Let's view some examples:
 
 ```bash
 qiime emperor plot \
-  --i-pcoa ./core-metrics-results/bray_curtis_pcoa_results.qza \
-  --m-metadata-file ./others/metadata.tsv \
-  --p-custom-axes week-relative-to-hct \
-  --o-visualization ./qzv/bray-curtis_week-relative-to-hct_PCoA.qzv
+	--i-pcoa ./core-metrics-results/bray_curtis_pcoa_results.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--p-custom-axes week-relative-to-hct \
+	--o-visualization ./qzv/bray-curtis_week-relative-to-hct_PCoA.qzv
 ```
 
 ```bash
 qiime emperor plot \
-  --i-pcoa ./core-metrics-results/weighted_unifrac_pcoa_results.qza \
-  --m-metadata-file ./others/metadata.tsv \
-  --p-custom-axes week-relative-to-fmt \
-  --o-visualization ./qzv/weighted-unifrac_week-relative-to-fmt_PCoA.qzv
+	--i-pcoa ./core-metrics-results/weighted_unifrac_pcoa_results.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--p-custom-axes week-relative-to-fmt \
+	--o-visualization ./qzv/weighted-unifrac_week-relative-to-fmt_PCoA.qzv
 ```
 
 :loudspeaker: Check this command for other numerical columns and beta diversity metrics.
