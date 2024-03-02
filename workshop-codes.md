@@ -759,3 +759,86 @@ qiime emperor plot \
 ```
 
 :loudspeaker: Check this command for other numerical columns and beta diversity metrics.
+
+## Heatmap
+
+### Step-1: Add Taxa Names in Feature Table
+
+```bash
+qiime taxa collapse \
+	--i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+	--i-taxonomy ./qza/taxonomy.qza \
+	--p-level 7 \
+	--o-collapsed-table ./qza/gg2-taxa_species-feature-table.qza
+```
+
+**[optional:]**
+
+```bash
+qiime feature-table summarize \
+	--i-table ./qza/gg2-taxa_species-feature-table.qza \
+	--m-sample-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/gg2-taxa_species-feature-table.qzv
+```
+
+
+
+### Step-2: Filter Feature Table
+
+```bash
+qiime feature-table filter-features-conditionally \
+	--i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+	--p-abundance 0.01 \
+	--p-prevalence 0.1 \
+	--o-filtered-table ./qza/filtered-abun_0.01-prev_0.1-feature-table.qza
+```
+
+**[optional: ]** Check summary of the filtered feature table.
+
+```bash
+qiime feature-table summarize \
+	--i-table ./qza/filtered-abun_0.01-prev_0.1-feature-table.qza \
+	--m-sample-metadata-file ./others/metadata.tsv \
+	--o-visualization ./qzv/filtered-abun_0.01-prev_0.1-feature-table-summary.qzv
+```
+
+### Step-3: Generate the Heatmap
+
+```bash
+qiime feature-table heatmap \
+	--i-table ./qza/filtered-abun_0.01-prev_0.1-feature-table.qza \
+	--m-sample-metadata-file ./others/metadata.tsv \
+	--m-sample-metadata-column categorical-time-relative-to-hct \
+	--o-visualization ./qzv/heatmap.qzv
+```
+
+## Core Features
+
+```bash
+qiime feature-table core-features \
+	--i-table ./qza/gg2-taxa_species-feature-table.qza \
+	--p-min-fraction 0.5 \
+	--o-visualization ./qzv/core-features.qzv
+```
+
+## Beta Rarefaction
+
+```bash
+qiime diversity beta-rarefaction \
+    --i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+    --p-metric jaccard \
+    --p-clustering-method upgma \
+    --m-metadata-file ./others/metadata.tsv \
+    --p-sampling-depth 24392 \
+    --i-phylogeny ./qza/rooted-tree.qza \
+    --o-visualization ./qzv/beta-rarefaction.qzv
+```
+
+Export:
+
+```bash
+qiime tools export \
+    --input-path ./qzv/beta-rarefaction.qzv \
+    --output-path ./results/upgma-tree
+```
+
