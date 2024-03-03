@@ -846,7 +846,11 @@ qiime tools export \
 
 ## Differential Abundance
 
-## ANCOM
+## ANCOM (Analysis of Composition of Microbiome)
+
+> ANCOM is implemented in the `q2-composition` plugin. ANCOM assumes that few (less than about 25%) of the features are changing between groups. If you expect that more features are changing between your groups, you should not use ANCOM as it will be more error-prone (an increase in both Type I and Type II errors is possible).
+
+Related paper: [Analysis of composition of microbiomes: a novel method for studying microbial composition](https://pubmed.ncbi.nlm.nih.gov/26028277/).
 
 #### Step -1: Filter low abundance features
 
@@ -898,5 +902,44 @@ qiime composition da-barplot \
 	--p-level-delimiter ';' \
 	--p-significance-threshold 1 \
 	--o-visualization ./qzv/check-autoFmtGroup-da-barplot.qzv
+```
+
+## Data for [Pathogenwatch](https://pathogen.watch/) and [CZID](https://czid.org/)
+
+Create necessary directory
+
+```bash
+mkdir others-data
+```
+
+### Data for pathgenwatch:
+
+```bash
+parallel-fastq-dump --sra-id ERR11752338 --threads 25 --outdir others-data/ --split-files --gzip
+```
+
+Perform de-novo assembly:
+
+```bash
+unicycler -1 others-data/ERR11752338_1.fastq.gz -2 others-data/ERR11752338_2.fastq.gz -t 28 -o others-data/unicycler-output
+```
+
+### Data for CZID:
+
+```bash
+parallel-fastq-dump --sra-id SRR14092272 --threads 25 --outdir others-data/ --split-files --gzip
+```
+
+```bash
+parallel-fastq-dump --sra-id SRR13697068 --threads 25 --outdir others-data/ --split-files --gzip
+```
+
+Rename the filenames as per CZID requirement:
+
+```bash
+mv others-data/SRR14092272_1.fastq.gz others-data/SRR14092272_pre_R1.fastq.gz
+mv others-data/SRR14092272_2.fastq.gz others-data/SRR14092272_pre_R2.fastq.gz
+mv others-data/SRR13697068_1.fastq.gz others-data/SRR13697068_post_R1.fastq.gz
+mv others-data/SRR13697068_2.fastq.gz others-data/SRR13697068_post_R2.fastq.gz
 ```
 
