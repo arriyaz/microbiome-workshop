@@ -166,6 +166,8 @@ wget \
 
 ## Prepare the metadata
 
+> For ANCOM-BC method, we can't use the column names with **`+`** or **`-`** . Because this method use + and - as part of its formula. That's why, during preparing metadata we should avoid using **`-`** as word separator. Best approach is following **camelCase** naming convention.
+
 From this large metadata we will only use 41 samples from the study by Taury *et al.*, 2018.
 
 ```bash
@@ -840,5 +842,61 @@ Export:
 qiime tools export \
     --input-path ./qzv/beta-rarefaction.qzv \
     --output-path ./results/upgma-tree
+```
+
+## Differential Abundance
+
+## ANCOM
+
+#### Step -1: Filter low abundance features
+
+We have to filter out lowly abundant features/OTUs/taxa from the feature-table. Because according to the following paper ([Analysis of microbial compositions: a review of normalization and differential abundance analysis](https://www.nature.com/articles/s41522-020-00160-w)), ANCOM and ANCOM-BC (bias correction) fail to control FDR at sample sizes <10.
+
+```bash
+qiime feature-table filter-features \
+	--i-table ./qza/gg2-taxa_species-feature-table.qza \
+	--p-min-samples 15 \
+	--o-filtered-table ./qza/filtered-feature-table-ANCOM.qza
+```
+
+#### Step-2: Add pseudocount
+
+ANCOM operates on `FeatureTable[Composition]` artifact, which is per-sample basis, ***\*but cannot tolerate frequencies of zero.\**** To build the composition artifact, a `FeatureTable[Frequency]` artifact must be provided to ***\*add-pseudocount\**** (an imputation method), which will produce the `FeatureTable[Composition] artifact`.
+
+```bash
+qiime composition add-pseudocount \
+	--i-table ./qza/filtered-feature-table-ANCOM.qza \
+	--o-composition-table ./qza/comp-filtered-feature-table-ANCOM.qza
+```
+
+#### Step-3: Calculate differential abundance
+
+```bash
+qiime composition ancom \
+	--i-table ./qza/comp-filtered-feature-table-ANCOM.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--m-metadata-column categorical-time-relative-to-hct \
+	--o-visualization ./qzv/ancom-categorical-time-relative-to-hct.qzv
+```
+
+### ANCOM-BC
+
+```bash
+qiime composition ancombc \
+	--i-table ./qza/gg2-taxa_species-feature-table.qza \
+	--m-metadata-file ./others/metadata.tsv \
+	--p-formula autoFmtGroup \
+	--p-prv-cut 0.5 \
+	--o-differentials ./qza/autoFmtGroup-ancombc.qza
+```
+
+> For this method, we can't use the column names with **`+`** or **`-`** . Because this method use + and - as part of its formula. That's why, during preparing metadata we should avoid using **`-`** as word separator. Best approach is following **camelCase** naming convention.
+
+```bash
+qiime composition da-barplot \
+	--i-data ./qza/autoFmtGroup-ancombc.qza \
+	--p-level-delimiter ';' \
+	--p-significance-threshold 1 \
+	--o-visualization ./qzv/check-autoFmtGroup-da-barplot.qzv
 ```
 
