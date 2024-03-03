@@ -883,7 +883,13 @@ qiime composition ancom \
 	--o-visualization ./qzv/ancom-categorical-time-relative-to-hct.qzv
 ```
 
+Centered Logarithmic Transforms (clr) : represents log-fold change relative to the average microbe.
+
+To learn more about clr check following paper: [https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-5160-5](https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-5160-5)
+
 ### ANCOM-BC
+
+Related Paper: [Analysis of compositions of microbiomes with bias correction](https://www.nature.com/articles/s41467-020-17041-7)
 
 ```bash
 qiime composition ancombc \
