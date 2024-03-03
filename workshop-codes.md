@@ -789,7 +789,7 @@ qiime feature-table summarize \
 
 ```bash
 qiime feature-table filter-features-conditionally \
-	--i-table ./classifier/gg2-2022.10-v4-v5.feature-table.biom.qza \
+	--i-table ./qza/gg2-taxa_species-feature-table.qza \
 	--p-abundance 0.01 \
 	--p-prevalence 0.1 \
 	--o-filtered-table ./qza/filtered-abun_0.01-prev_0.1-feature-table.qza
